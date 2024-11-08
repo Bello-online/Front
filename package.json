@@ -1,0 +1,25 @@
+{
+  "name": "capstone-project-bello-online",
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend start"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
+    "next" : "14.2.13"
+  },
+  "eslintConfig": {
+    "extends": "next",
+    "rules":{
+      "react/no-unescaped-entities": "off",
+      "@next/next/no-page-custom-font": "off"
+    }
+  }
+}
+
