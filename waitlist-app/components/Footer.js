@@ -1,9 +1,10 @@
 import React from 'react'
 import Link from 'next/link'
-import { Twitter, Github, Linkedin, Mail } from 'lucide-react'
+import { Twitter2, Github2, LinkedIn, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+
 
 const Footer = () => {
   return (
@@ -48,17 +49,17 @@ const Footer = () => {
           <div className="flex space-x-4">
             <Button variant="ghost" size="icon" asChild>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                <Twitter className="h-5 w-5" />
+                <Twitter2 className="h-5 w-5" />
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
               <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                <Github className="h-5 w-5" />
+                <Github2 className="h-5 w-5" />
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                <Linkedin className="h-5 w-5" />
+                <LinkedIn className="h-5 w-5" />
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
