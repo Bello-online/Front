@@ -1,13 +1,21 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import axios from 'axios';
+import { Bell } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const Navbar = ({ userRole, userId }) => {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Navigation options for customers
   const customerLinks = [
     { label: 'Waitlists', path: '/customer-dashboard/waitlists' },
     { label: 'Events/Appointments', path: '/customer-dashboard/events' },
@@ -15,7 +23,6 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'History', path: '/customer-dashboard/history' },
   ];
 
-  // Navigation options for business owners
   const businessLinks = [
     { label: 'Waitlists', path: '/business-dashboard/waitlists' },
     { label: 'Events/Appointments', path: '/business-dashboard/events' },
@@ -23,62 +30,77 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Reports', path: '/business-dashboard/reports' },
   ];
 
-  // Conditionally show navigation links based on user role
   const links = userRole === 'business_owner' ? businessLinks : customerLinks;
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
     const fetchUnreadCount = async () => {
+      if (!userId) return;
       try {
-        const response = await axios.get(`https://backend-deploy-0d782579924c.herokuapp.com/api/notifications/unread-count/${userId}`);
-        setUnreadCount(response.data.unreadCount);
+        const response = await axios.get(`${API_URL}/api/notifications/${userId}`);
+        const unreadNotifications = response.data.filter(notif => !notif.isRead);
+        setUnreadCount(unreadNotifications.length);
       } catch (error) {
-        console.error("Error fetching unread notifications count:", error);
+        console.error("Error fetching unread count:", error);
       }
     };
+
     fetchUnreadCount();
+    // Set up polling to check for new notifications
+    const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
   }, [userId]);
 
   const handleNotificationsClick = async () => {
     try {
-      await axios.put(`https://backend-deploy-0d782579924c.herokuapp.com/api/notifications/mark-all-as-read/${userId}`);
+      await axios.put(`${API_URL}/api/notifications/mark-all-as-read/${userId}`);
       setUnreadCount(0);
 
       if (userRole === 'business_owner') {
-      router.push('/business-dashboard/notifications');
-    } else if (userRole === 'customer') {
-      router.push('/customer-dashboard/notifications');
-    }
-
+        router.push('/business-dashboard/notifications');
+      } else if (userRole === 'customer') {
+        router.push('/customer-dashboard/notifications');
+      }
     } catch (error) {
       console.error("Error marking notifications as read:", error);
     }
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4">
-      <ul className="flex space-x-4 container mx-auto">
-        {links.map((link) => (
-          <li key={link.label}>
-            <button
-              onClick={() => router.push(link.path)}
-              className="hover:text-blue-400"
-            >
-              {link.label}
-            </button>
-          </li>
-        ))}
-        <li className="ml-auto relative">
-          <button onClick={handleNotificationsClick} className="hover:text-blue-400">
-          <NotificationsIcon />
-            {unreadCount > 0 && (
-              <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-        </li>
-      </ul>
+    <nav className="bg-primary text-primary-foreground">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          <ul className="flex space-x-4">
+            {links.map((link) => (
+              <li key={link.label}>
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push(link.path)}
+                >
+                  {link.label}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleNotificationsClick}>
+                View Notifications
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
     </nav>
   );
 };

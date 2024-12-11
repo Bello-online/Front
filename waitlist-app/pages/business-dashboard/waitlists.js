@@ -1,34 +1,96 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Navbar from '../../components/Navbar';
+import SearchBar from '../../components/SearchBar';
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Bell } from 'lucide-react'
 
-const BusinessWaitlistList = ({ userId }) => {
+const BusinessWaitlistList = () => {
   const [waitlists, setWaitlists] = useState([]);
   const [customersByWaitlist, setCustomersByWaitlist] = useState({});
   const [visibleWaitlists, setVisibleWaitlists] = useState({});
   const [currentPage, setCurrentPage] = useState({});
-  const [notifications, setNotifications] = useState([]); // Notifications for new joins
-  const customersPerPage = 4; // Number of customers per page
+  const [notifications, setNotifications] = useState([]);
+  const [filteredWaitlists, setFilteredWaitlists] = useState([]);
+  const customersPerPage = 4;
+  const userRole = 'business_owner';
 
-  // Fetch waitlists created by the business owner
+  const searchFields = [
+    { name: 'serviceName', label: 'Service Name', type: 'text', placeholder: 'Search by service name' },
+    { name: 'waitTime', label: 'Wait Time', type: 'range', placeholder: 'Search by wait time' },
+    { name: 'status', label: 'Status', type: 'text', placeholder: 'Search by status' },
+    { name: 'location', label: 'Location', type: 'text', placeholder: 'Search by location' }
+  ];
+
+  const handleSearch = async (searchParams) => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (searchParams.query) queryParams.append('query', searchParams.query);
+      if (searchParams.ranges) queryParams.append('ranges', JSON.stringify(searchParams.ranges));
+      
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (key !== 'query' && key !== 'ranges' && value) {
+          queryParams.append(key, value);
+        }
+      });
+
+      const response = await axios.get(`${API_URL}/api/waitlists/search?${queryParams}`);
+      setFilteredWaitlists(response.data);
+    } catch (error) {
+      console.error('Error searching waitlists:', error);
+      // Fallback to frontend filtering
+      let results = waitlists;
+
+      if (searchParams.query) {
+        const query = searchParams.query.toLowerCase();
+        results = results.filter(waitlist => 
+          waitlist.serviceName.toLowerCase().includes(query) ||
+          waitlist.status.toLowerCase().includes(query) ||
+          waitlist.location?.toLowerCase().includes(query)
+        );
+      }
+
+      if (searchParams.ranges) {
+        Object.entries(searchParams.ranges).forEach(([field, range]) => {
+          if (range.min) {
+            results = results.filter(waitlist => waitlist[field] >= Number(range.min));
+          }
+          if (range.max) {
+            results = results.filter(waitlist => waitlist[field] <= Number(range.max));
+          }
+        });
+      }
+
+      setFilteredWaitlists(results);
+    }
+  };
+
   useEffect(() => {
+    const userId = localStorage.getItem("userId");
     const fetchWaitlists = async () => {
       try {
-        const response = await axios.get('https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists', {
-          params: { ownerId: userId }, // Assuming `userId` identifies the business owner
+        const response = await axios.get(`${API_URL}/api/waitlists`, {
+          params: { ownerId: userId },
         });
         setWaitlists(response.data);
+        setFilteredWaitlists(response.data);
       } catch (error) {
         console.error('Error fetching waitlists:', error);
       }
     };
 
     fetchWaitlists();
-  }, [userId]);
+  }, []);
 
-  // Polling function to fetch new join notifications
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get('https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists/notifications');
+      const response = await axios.get(`${API_URL}/api/waitlists/notifications`);
       if (response.data.length > 0) {
         setNotifications(response.data.map(join => `New join: ${join.User.username} joined waitlist ${join.waitlistId}`));
       }
@@ -37,10 +99,9 @@ const BusinessWaitlistList = ({ userId }) => {
     }
   };
 
-  // Polling for notifications every 10 seconds
   useEffect(() => {
     const interval = setInterval(fetchNotifications, 10000);
-    return () => clearInterval(interval); // Clear interval on component unmount
+    return () => clearInterval(interval);
   }, []);
 
   const toggleCustomersForWaitlist = async (waitlistId) => {
@@ -51,7 +112,7 @@ const BusinessWaitlistList = ({ userId }) => {
 
     if (!customersByWaitlist[waitlistId]) {
       try {
-        const response = await axios.get(`https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists/${waitlistId}/customers`);
+        const response = await axios.get(`${API_URL}/api/waitlists/${waitlistId}/customers`);
         setCustomersByWaitlist((prev) => ({
           ...prev,
           [waitlistId]: response.data,
@@ -63,7 +124,6 @@ const BusinessWaitlistList = ({ userId }) => {
     }
   };
 
-  // Pagination for customers
   const paginateCustomers = (waitlistId) => {
     const startIndex = (currentPage[waitlistId] - 1) * customersPerPage;
     const endIndex = startIndex + customersPerPage;
@@ -95,101 +155,97 @@ const BusinessWaitlistList = ({ userId }) => {
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Your Waitlists</h2>
-        {/* Notifications Section */}
-      {notifications.length > 0 && (
-        <div className="notifications bg-green-100 p-3 rounded mb-4">
-          <h3 className="font-semibold">Notifications</h3>
-          {notifications.map((notification, index) => (
-            <p key={index} className="text-green-800">{notification}</p>
+    <div className="min-h-screen bg-background">
+      <Navbar userRole={userRole} />
+      <div className="container mx-auto p-6">
+        <h1 className="text-4xl font-bold mb-6">Your Waitlists</h1>
+        
+        <SearchBar 
+          onSearch={handleSearch}
+          fields={searchFields}
+        />
+
+        {notifications.length > 0 && (
+          <Alert className="mb-6">
+            <Bell className="h-4 w-4" />
+            <AlertTitle>New Notifications</AlertTitle>
+            <AlertDescription>
+              {notifications.map((notification, index) => (
+                <p key={index}>{notification}</p>
+              ))}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {filteredWaitlists.map((waitlist) => (
+          <Card key={waitlist.id} className="mb-6">
+            <CardHeader>
+              <CardTitle>{waitlist.serviceName}</CardTitle>
+              <CardDescription>Status: {waitlist.status}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => toggleCustomersForWaitlist(waitlist.id)}>
+                {visibleWaitlists[waitlist.id] ? 'Hide Joined Customers' : 'View Joined Customers'}
+              </Button>
+
+              {visibleWaitlists[waitlist.id] && customersByWaitlist[waitlist.id] && (
+                <div className="mt-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Wait Time</TableHead>
+                        <TableHead>Phone Number</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginateCustomers(waitlist.id).map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell>{customer.User.username}</TableCell>
+                          <TableCell>{waitlist.status}</TableCell>
+                          <TableCell>{waitlist.waitTime} mins</TableCell>
+                          <TableCell>{customer.User.phone}</TableCell>
+                          <TableCell>
+                            <Button variant="destructive" size="sm" onClick={() => handleRemoveCustomer(customer.id)} className="mr-2">
+                              Remove
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleNotifyCustomer(customer.id)}>
+                              Notify
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  <Pagination className="mt-4">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious onClick={() => handlePreviousPage(waitlist.id)} />
+                      </PaginationItem>
+                      {[...Array(Math.ceil(customersByWaitlist[waitlist.id].length / customersPerPage)).keys()].map((page) => (
+                        <PaginationItem key={page + 1}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage((prev) => ({ ...prev, [waitlist.id]: page + 1 }))}
+                            isActive={currentPage[waitlist.id] === page + 1}
+                          >
+                            {page + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext onClick={() => handleNextPage(waitlist.id)} />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
-    )}
-      <ul>
-        {waitlists.map((waitlist) => (
-          <li key={waitlist.id} className="mb-6 border p-4 rounded">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">{waitlist.serviceName}</h3>
-              <button
-                onClick={() => toggleCustomersForWaitlist(waitlist.id)}
-                className="bg-blue-500 text-white px-3 py-1 rounded"
-              >
-                {visibleWaitlists[waitlist.id] ? 'Hide Joined Customers' : 'View Joined Customers'}
-              </button>
-            </div>
-
-            {visibleWaitlists[waitlist.id] && customersByWaitlist[waitlist.id] && (
-              <div className="mt-4">
-                <h4 className="font-semibold">Customers:</h4>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border border-black-300">
-                    <thead className="bg-gray-700 text-white">
-                      <tr>
-                        <th className="py-2 px-4 text-left">Name</th>
-                        <th className="py-2 px-4 text-left">Status</th>
-                        <th className="py-2 px-4 text-left">Wait Time</th>
-                        <th className="py-2 px-4 text-left">Phone Number</th>
-                        <th className="py-2 px-4 text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginateCustomers(waitlist.id).map((customer) => (
-                        <tr key={customer.id} className="border-t">
-                          <td className="py-2 px-4 text-black">{customer.User.username}</td>
-                          <td className="py-2 px-4 text-black">{waitlist.status}</td>
-                          <td className="py-2 px-4 text-black">{waitlist.waitTime} mins</td>
-                          <td className="py-2 px-4 text-black">{customer.User.phone}</td>
-                          <td className="py-2 px-4 text-center">
-                            <button
-                              className="bg-red-500 text-white px-3 py-1 mr-2 rounded"
-                              onClick={() => handleRemoveCustomer(customer.id)}
-                            >
-                              Remove
-                            </button>
-                            <button
-                              className="bg-orange-500 text-white px-3 py-1 rounded"
-                              onClick={() => handleNotifyCustomer(customer.id)}
-                            >
-                              Notify
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="flex justify-center mt-4">
-                  <button
-                    onClick={() => handlePreviousPage(waitlist.id)}
-                    disabled={currentPage[waitlist.id] === 1}
-                    className="bg-gray-300 px-2 py-1 mx-1 rounded"
-                  >
-                    &lt;
-                  </button>
-                  {[...Array(Math.ceil(customersByWaitlist[waitlist.id].length / customersPerPage)).keys()].map((page) => (
-                    <button
-                      key={page + 1}
-                      onClick={() => setCurrentPage((prev) => ({ ...prev, [waitlist.id]: page + 1 }))}
-                      className={`px-3 py-1 mx-1 rounded ${currentPage[waitlist.id] === page + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    >
-                      {page + 1}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => handleNextPage(waitlist.id)}
-                    disabled={currentPage[waitlist.id] === Math.ceil(customersByWaitlist[waitlist.id].length / customersPerPage)}
-                    className="bg-gray-300 px-2 py-1 mx-1 rounded"
-                  >
-                    &gt;
-                  </button>
-                </div>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

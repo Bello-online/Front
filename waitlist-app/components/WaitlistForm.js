@@ -1,5 +1,11 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 import { useState } from 'react';
 import axios from 'axios';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 const WaitlistForm = () => {
   const [formData, setFormData] = useState({
@@ -20,62 +26,92 @@ const WaitlistForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Sending form data: ', formData);
+
+    // Set the ownerId to the current user's ID
+    const ownerId = localStorage.getItem('userId');
+    
+    if (!ownerId) {
+      console.error('No user ID found in local storage');
+      return;
+    }
+    const dataToSend = { ...formData, ownerId };
+    // console.log('Sending form data: ', formData);
 
     try {
-      const response = await axios.post('https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists/create', formData);
+      const response = await axios.post('https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists/create', dataToSend);
       console.log('Waitlist Created:', response.data);
+      // Reset form after successful submission
+      setFormData({
+        serviceName: '',
+        waitTime: '',
+        status: '',
+        address: '',
+        phone: ''
+      });
     } catch (error) {
       console.error('Error creating waitlist:', error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded shadow-lg ">
-      <input
-        type="text"
-        name="serviceName"
-        value={formData.serviceName}
-        onChange={handleChange}
-        placeholder="Service Name"
-        className="p-2 border rounded w-full text-black"
-      />
-      <input
-        type="number"
-        name="waitTime"
-        value={formData.waitTime}
-        onChange={handleChange}
-        placeholder="Wait Time (mins)"
-        className="p-2 border rounded w-full"
-      />
-      <input
-        type="text"
-        name="status"
-        value={formData.status}
-        onChange={handleChange}
-        placeholder="Status"
-        className="p-2 border rounded w-full"
-      />
-      <input
-        type="text"
-        name="address"
-        value={formData.address}
-        onChange={handleChange}
-        placeholder="Address"
-        className="p-2 border rounded w-full"
-      />
-      <input
-        type="text"
-        name="phone"
-        value={formData.phone}
-        onChange={handleChange}
-        placeholder="Phone Number"
-        className="p-2 border rounded w-full"
-      />
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded w-full">
-        Create Waitlist
-      </button>
-    </form>
+    <Card>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="serviceName">Service Name</Label>
+            <Input
+              id="serviceName"
+              name="serviceName"
+              value={formData.serviceName}
+              onChange={handleChange}
+              placeholder="Enter service name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="waitTime">Wait Time (mins)</Label>
+            <Input
+              id="waitTime"
+              name="waitTime"
+              type="number"
+              value={formData.waitTime}
+              onChange={handleChange}
+              placeholder="Enter wait time in minutes"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Input
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              placeholder="Enter status"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Enter address"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter phone number"
+            />
+          </div>
+          <Button type="submit">Create Waitlist</Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
