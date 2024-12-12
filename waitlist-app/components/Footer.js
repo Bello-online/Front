@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { Twitter2, Github2, LinkedIn, Mail } from 'lucide-react'
+import {  Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -47,21 +47,21 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} WaitlistApp. All rights reserved.
           </p>
           <div className="flex space-x-4">
-            <Button variant="ghost" size="icon" asChild>
+            {/* <Button variant="ghost" size="icon" asChild>
               <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                <Twitter2 className="h-5 w-5" />
+                <Twitter className="h-5 w-5" />
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
               <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                <Github2 className="h-5 w-5" />
+                <GithubIcon className="h-5 w-5" />
               </a>
             </Button>
             <Button variant="ghost" size="icon" asChild>
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                <LinkedIn className="h-5 w-5" />
+                <Linkedin className="h-5 w-5" />
               </a>
-            </Button>
+            </Button> */}
             <Button variant="ghost" size="icon" asChild>
               <a href="mailto:info@waitlistapp.com" aria-label="Email">
                 <Mail className="h-5 w-5" />
