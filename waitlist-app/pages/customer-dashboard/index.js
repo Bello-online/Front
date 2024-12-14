@@ -10,7 +10,7 @@ const CustomerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar userRole={userRole} />
+      <Navbar userRole={userRole} userId={localStorage.getItem("userId")} />
       <div className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-6">Customer Dashboard</h1>
         <Card>
@@ -54,7 +54,7 @@ const CustomerDashboard = () => {
                 <div className="text-2xl font-bold">5</div>
                 <p className="text-xs text-muted-foreground">You have 5 unread notifications</p>
                 <Button asChild className="w-full mt-4">
-                  <Link href="/customer/notifications">View Notifications</Link>
+                  <Link href="/customer-dashboard/notifications">View Notifications</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -67,7 +67,7 @@ const CustomerDashboard = () => {
                 <div className="text-2xl font-bold">10</div>
                 <p className="text-xs text-muted-foreground">You've joined 10 waitlists in total</p>
                 <Button asChild className="w-full mt-4">
-                  <Link href="/customer/history">View History</Link>
+                  <Link href="/customer-dashboard/history">View History</Link>
                 </Button>
               </CardContent>
             </Card>

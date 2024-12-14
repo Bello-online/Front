@@ -32,12 +32,12 @@ const NotificationsPage = () => {
 
   const handleMarkAsRead = async (notificationId) => {
     try {
-      const response = await axios.delete(`https://backend-deploy-0d782579924c.herokuapp.com/api/notifications/mark-as-read/${notificationId}`);
+      const response = await axios.delete(`${API_URL}/api/notifications/mark-as-read/${notificationId}`);
       if (response.status === 200) {
-        setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
-        // Update the unread count in the parent component
-        const newUnreadCount = notifications.length - 1;
-        setUnreadCount(newUnreadCount);
+        setNotifications(prev => {
+          const updatedNotifications = prev.filter(notif => notif.id !== notificationId);
+          return updatedNotifications;
+        });
       }
     } catch (error) {
       console.error("Error marking notification as read:", error);

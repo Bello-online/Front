@@ -15,6 +15,7 @@ import {
 const Navbar = ({ userRole, userId }) => {
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
 
   const customerLinks = [
     { label: 'Waitlists', path: '/customer-dashboard/waitlists' },
@@ -33,38 +34,23 @@ const Navbar = ({ userRole, userId }) => {
   const links = userRole === 'business_owner' ? businessLinks : customerLinks;
 
   useEffect(() => {
-    const fetchUnreadCount = async () => {
-      if (!userId) return;
+    if (!userId) return;
+
+    const fetchNotifications = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/notifications/${userId}`);
-        const unreadNotifications = response.data.filter(notif => !notif.isRead);
+        const unreadNotifications = response.data;
+        setNotifications(unreadNotifications);
         setUnreadCount(unreadNotifications.length);
       } catch (error) {
-        console.error("Error fetching unread count:", error);
+        console.error("Error fetching notifications:", error);
       }
     };
 
-    fetchUnreadCount();
-    // Set up polling to check for new notifications
-    const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
-
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
     return () => clearInterval(interval);
   }, [userId]);
-
-  const handleNotificationsClick = async () => {
-    try {
-      await axios.put(`${API_URL}/api/notifications/mark-all-as-read/${userId}`);
-      setUnreadCount(0);
-
-      if (userRole === 'business_owner') {
-        router.push('/business-dashboard/notifications');
-      } else if (userRole === 'customer') {
-        router.push('/customer-dashboard/notifications');
-      }
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
-    }
-  };
 
   return (
     <nav className="bg-primary text-primary-foreground">
@@ -73,10 +59,7 @@ const Navbar = ({ userRole, userId }) => {
           <ul className="flex space-x-4">
             {links.map((link) => (
               <li key={link.label}>
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push(link.path)}
-                >
+                <Button variant="ghost" onClick={() => router.push(link.path)}>
                   {link.label}
                 </Button>
               </li>
@@ -94,9 +77,15 @@ const Navbar = ({ userRole, userId }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleNotificationsClick}>
-                View Notifications
-              </DropdownMenuItem>
+              {notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <DropdownMenuItem key={notification.id}>
+                    {notification.message}
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <DropdownMenuItem>No notifications</DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

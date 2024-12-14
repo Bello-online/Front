@@ -20,6 +20,7 @@ const BusinessWaitlistList = () => {
   const [filteredWaitlists, setFilteredWaitlists] = useState([]);
   const customersPerPage = 4;
   const userRole = 'business_owner';
+  const [userId, setUserId] = useState(null);
 
   const searchFields = [
     { name: 'serviceName', label: 'Service Name', type: 'text', placeholder: 'Search by service name' },
@@ -72,7 +73,13 @@ const BusinessWaitlistList = () => {
   };
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchWaitlists = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/waitlists`, {
@@ -86,7 +93,7 @@ const BusinessWaitlistList = () => {
     };
 
     fetchWaitlists();
-  }, []);
+  }, [userId]);
 
   const fetchNotifications = async () => {
     try {
@@ -156,7 +163,7 @@ const BusinessWaitlistList = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar userRole={userRole} />
+      <Navbar userRole="business_owner" userId={userId} />
       <div className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-6">Your Waitlists</h1>
         
