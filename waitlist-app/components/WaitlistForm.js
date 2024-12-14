@@ -38,7 +38,7 @@ const WaitlistForm = () => {
     // console.log('Sending form data: ', formData);
 
     try {
-      const response = await axios.post('https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists/create', dataToSend);
+      const response = await axios.post(`${API_URL}/api/waitlists/create`, dataToSend);
       console.log('Waitlist Created:', response.data);
       // Reset form after successful submission
       setFormData({
