@@ -34,14 +34,17 @@ const CustomerHistory = () => {
           params: { userId }
         });
 
-        const formattedHistory = response.data.map(waitlist => ({
-          id: waitlist.Waitlist?.id || waitlist.id,
-          serviceName: waitlist.Waitlist?.serviceName || 'Unknown Service',
-          waitTime: waitlist.Waitlist?.waitTime || 0,
-          dateJoined: waitlist.createdAt || new Date().toISOString(),
-          status: waitlist.status || 'Completed'
+        const formattedHistory = response.data.map(join => ({
+          id: join.id,
+          serviceName: join.Waitlist?.serviceName || 'Unknown Service',
+          waitTime: join.Waitlist?.waitTime || 0,
+          dateJoined: join.createdAt,
+          status: 'Completed'
         }));
 
+        console.log('API Response:', response.data);
+        console.log('Formatted History:', formattedHistory);
+        
         setHistory(formattedHistory);
       } catch (error) {
         console.error("Error fetching waitlist history:", error);
