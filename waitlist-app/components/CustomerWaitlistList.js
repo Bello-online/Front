@@ -38,9 +38,11 @@ const CustomerWaitlistList = () => {
       const fetchJoinedWaitlists = async () => {
         try {
           const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
-            params: { userId },
+            params: { userId }
           });
-          setJoinedWaitlists(response.data);
+          const joinedIds = response.data.map(waitlist => waitlist.id);
+          setJoinedWaitlists(joinedIds);
+          console.log('Joined waitlists:', joinedIds);
         } catch (error) {
           console.error('Error fetching joined waitlists:', error);
         }
@@ -52,15 +54,27 @@ const CustomerWaitlistList = () => {
 
   const handleJoinWaitlist = async (waitlistId) => {
     if (!userId) {
-      alert('User ID not found');
+      setModalState({
+        isOpen: true,
+        title: 'Login Required',
+        description: 'Please log in to join a waitlist',
+        confirmButton: 'OK'
+      });
       return;
     }
   
     try {
       await axios.post(`${API_URL}/api/waitlists/${waitlistId}/join`, { userId });
-      setJoinedWaitlists([...joinedWaitlists, waitlistId]);
+      setJoinedWaitlists(prev => [...prev, waitlistId]);
+      console.log('Joined waitlist:', waitlistId);
     } catch (error) {
       console.error('Error joining waitlist:', error);
+      setModalState({
+        isOpen: true,
+        title: 'Error',
+        description: 'Could not join the waitlist.',
+        confirmButton: 'OK'
+      });
     }
   };
   
