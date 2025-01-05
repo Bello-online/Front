@@ -1,13 +1,17 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../../components/Navbar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2 } from "lucide-react";
 
 const CustomerHistory = () => {
   const userRole = 'customer';
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -15,7 +19,8 @@ const CustomerHistory = () => {
     if (storedUserId) {
       setUserId(storedUserId);
     } else {
-      console.error("User ID not found in localStorage");
+      setError("User ID not found. Please log in again.");
+      setLoading(false);
     }
   }, []);
 
@@ -24,10 +29,17 @@ const CustomerHistory = () => {
 
     const fetchHistory = async () => {
       try {
-        const response = await axios.get(`https://backend-deploy-0d782579924c.herokuapp.com/api/waitlists/history/${userId}`);
+        setLoading(true);
+        // Using the existing joined waitlists endpoint
+        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+          params: { userId }
+        });
         setHistory(response.data);
       } catch (error) {
         console.error("Error fetching waitlist history:", error);
+        setError("Failed to load history. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -45,7 +57,13 @@ const CustomerHistory = () => {
             <CardDescription>A record of all the waitlists you've been part of</CardDescription>
           </CardHeader>
           <CardContent>
-            {history.length > 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center h-32">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : error ? (
+              <div className="text-red-500 text-center">{error}</div>
+            ) : history.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -59,15 +77,17 @@ const CustomerHistory = () => {
                   {history.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>{item.serviceName}</TableCell>
-                      <TableCell>{new Date(item.dateJoined).toLocaleString()}</TableCell>
+                      <TableCell>{new Date(item.createdAt).toLocaleString()}</TableCell>
                       <TableCell>{item.waitTime} mins</TableCell>
-                      <TableCell>{item.status}</TableCell>
+                      <TableCell>{item.status || 'Completed'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p>You haven't joined any waitlists yet.</p>
+              <p className="text-center text-muted-foreground">
+                You haven't joined any waitlists yet.
+              </p>
             )}
           </CardContent>
         </Card>

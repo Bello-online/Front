@@ -1,12 +1,42 @@
-import React from 'react';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ClipboardList, Calendar, Bell, Clock } from 'lucide-react'
 import Link from 'next/link'
+import axios from 'axios';
 
 const CustomerDashboard = () => {
   const userRole = 'customer';
+  const [historyCount, setHistoryCount] = useState(0);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchJoinedWaitlists = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+          params: { userId }
+        });
+        setHistoryCount(response.data.length);
+      } catch (error) {
+        console.error('Error fetching history count:', error);
+        setHistoryCount(0);
+      }
+    };
+
+    fetchJoinedWaitlists();
+  }, [userId]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,8 +94,10 @@ const CustomerDashboard = () => {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">10</div>
-                <p className="text-xs text-muted-foreground">You've joined 10 waitlists in total</p>
+                <div className="text-2xl font-bold">{historyCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  You've joined {historyCount} waitlists in total
+                </p>
                 <Button asChild className="w-full mt-4">
                   <Link href="/customer-dashboard/history">View History</Link>
                 </Button>
