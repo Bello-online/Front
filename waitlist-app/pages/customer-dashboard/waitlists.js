@@ -50,8 +50,10 @@ const CustomerWaitlists = () => {
 
     const fetchJoinedWaitlists = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/waitlists/user/${userId}`);
-        setJoinedWaitlists(response.data.map(w => w.id));
+        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+          params: { userId }
+        });
+        setJoinedWaitlists(response.data);
       } catch (error) {
         console.error('Error fetching joined waitlists:', error);
       }
