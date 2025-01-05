@@ -35,11 +35,11 @@ const CustomerHistory = () => {
         });
 
         const formattedHistory = response.data.map(waitlist => ({
-          id: waitlist.id,
-          serviceName: waitlist.serviceName,
-          waitTime: waitlist.waitTime,
-          dateJoined: new Date().toISOString(),
-          status: 'Completed'
+          id: waitlist.Waitlist?.id || waitlist.id,
+          serviceName: waitlist.Waitlist?.serviceName || 'Unknown Service',
+          waitTime: waitlist.Waitlist?.waitTime || 0,
+          dateJoined: waitlist.createdAt || new Date().toISOString(),
+          status: waitlist.status || 'Completed'
         }));
 
         setHistory(formattedHistory);
