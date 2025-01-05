@@ -7,6 +7,7 @@ import SearchBar from '../../components/SearchBar';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Users } from 'lucide-react';
+import { Modal } from '@/components/modal';
 
 const CustomerWaitlists = () => {
   const userRole = 'customer';
@@ -14,6 +15,12 @@ const CustomerWaitlists = () => {
   const [waitlists, setWaitlists] = useState([]);
   const [filteredWaitlists, setFilteredWaitlists] = useState([]);
   const [joinedWaitlists, setJoinedWaitlists] = useState([]);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    description: '',
+    confirmButton: ''
+  });
 
   const searchFields = [
     { name: 'serviceName', label: 'Service Name', type: 'text', placeholder: 'Search by service name' },
@@ -98,7 +105,12 @@ const CustomerWaitlists = () => {
 
   const handleJoinWaitlist = async (waitlistId) => {
     if (!userId) {
-      alert('Please log in to join a waitlist');
+      setModalState({
+        isOpen: true,
+        title: 'Login Required',
+        description: 'Please log in to join a waitlist',
+        confirmButton: 'OK'
+      });
       return;
     }
 
@@ -109,13 +121,23 @@ const CustomerWaitlists = () => {
     } catch (error) {
       console.error('Error joining waitlist:', error);
       setJoinedWaitlists(prev => prev.filter(id => id !== waitlistId));
-      alert('Could not join the waitlist.');
+      setModalState({
+        isOpen: true,
+        title: 'Error',
+        description: 'Could not join the waitlist.',
+        confirmButton: 'OK'
+      });
     }
   };
 
   const handleLeaveWaitlist = async (waitlistId) => {
     if (!userId) {
-      alert('User ID not found');
+      setModalState({
+        isOpen: true,
+        title: 'Error',
+        description: 'User ID not found',
+        confirmButton: 'OK'
+      });
       return;
     }
 
@@ -128,7 +150,12 @@ const CustomerWaitlists = () => {
     } catch (error) {
       console.error('Error leaving waitlist:', error);
       setJoinedWaitlists(prev => [...prev, waitlistId]);
-      alert('Could not leave the waitlist.');
+      setModalState({
+        isOpen: true,
+        title: 'Error',
+        description: 'Could not leave the waitlist.',
+        confirmButton: 'OK'
+      });
     }
   };
 
@@ -185,6 +212,13 @@ const CustomerWaitlists = () => {
           ))}
         </div>
       </div>
+      <Modal 
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.title}
+        description={modalState.description}
+        confirmButton={modalState.confirmButton}
+      />
     </div>
   );
 };

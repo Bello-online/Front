@@ -13,6 +13,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { Modal } from '@/components/modal';
 
 const BusinessEvents = () => {
   const userRole = "business_owner";
@@ -29,6 +30,13 @@ const BusinessEvents = () => {
   });
 
   const [editingEvent, setEditingEvent] = useState(null);
+
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    description: '',
+    confirmButton: ''
+  });
 
   // Fetch userId from localStorage
   useEffect(() => {
@@ -55,7 +63,13 @@ const BusinessEvents = () => {
   const handleEventSubmit = async (e) => {
     e.preventDefault();
     if (!newEvent.title || !newEvent.date) {
-      alert("Title and Date are required!");
+      setModalState({
+        isOpen: true,
+        title: 'Required Fields',
+        description: 'Title and Date are required!',
+        confirmButton: 'OK'
+      });
+      return;
     }
     if (!userId) {
       console.error("Cannot create or update event without userId");
@@ -125,6 +139,20 @@ const BusinessEvents = () => {
     setEditingEvent(event);
   };
 
+  const handleCapacityChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (value < 1) {
+      setModalState({
+        isOpen: true,
+        title: 'Invalid Input',
+        description: 'Capacity must be at least 1',
+        confirmButton: 'OK'
+      });
+      return;
+    }
+    setNewEvent({ ...newEvent, capacity: value });
+  };
+
   useEffect(() => {
     fetchEvents();
   }, [userId]);
@@ -170,10 +198,7 @@ const BusinessEvents = () => {
                 type="number"
                 placeholder="Capacity"
                 value={newEvent.capacity}
-                onChange={(e) => {const value = parseInt(e.target.value, 10); if (value < 1) {
-                  alert("Capacity must be at least 1");return;}
-                  setNewEvent({ ...newEvent, capacity: value });
-                }}
+                onChange={handleCapacityChange}
               />
               <Button type="submit">{editingEvent ? "Update Event" : "Create Event"}</Button>
             </form>
@@ -224,6 +249,13 @@ const BusinessEvents = () => {
           ))}
         </ul>
       </div>
+      <Modal 
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.title}
+        description={modalState.description}
+        confirmButton={modalState.confirmButton}
+      />
     </div>
   );
 };

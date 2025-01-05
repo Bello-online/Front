@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Modal } from '@/components/modal';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,12 @@ const SignupPage = () => {
   });
   const [errors, setErrors] = useState({});
   const router = useRouter();
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    description: '',
+    confirmButton: 'OK'
+  });
 
   const validateForm = () => {
     const newErrors = {};
@@ -34,18 +41,44 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    
+    const validationErrors = {};
+    if (!formData.username) validationErrors.username = 'Username is required';
+    if (!formData.password) validationErrors.password = 'Password is required';
+    if (!formData.phone) validationErrors.phone = 'Phone number is required';
+    if (!formData.email) validationErrors.email = 'Email is required';
+    if (!formData.role) validationErrors.role = 'Role is required';
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setModalState({
+        isOpen: true,
+        title: 'Validation Error',
+        description: 'Please fill in all required fields',
+        confirmButton: 'OK'
+      });
       return;
     }
+
     try {
-      await axios.post('https://backend-deploy-0d782579924c.herokuapp.com/api/users/signup', formData);
-      alert('Sign-up successful!');
-      router.push('/login');
+      const response = await axios.post('https://backend-deploy-0d782579924c.herokuapp.com/api/users/signup', formData);
+      if (response.data.success) {
+        setModalState({
+          isOpen: true,
+          title: 'Success',
+          description: 'Account created successfully! Please log in.',
+          confirmButton: 'OK'
+        });
+        router.push('/login');
+      }
     } catch (error) {
-      console.error('Error during sign-up:', error);
-      setErrors({ general: 'Error during sign-up. Please try again.' });
+      console.error('Signup error:', error);
+      setModalState({
+        isOpen: true,
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to create account',
+        confirmButton: 'OK'
+      });
     }
   };
 
@@ -129,6 +162,13 @@ const SignupPage = () => {
           </form>
         </CardContent>
       </Card>
+      <Modal 
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.title}
+        description={modalState.description}
+        confirmButton={modalState.confirmButton}
+      />
     </div>
   );
 };
