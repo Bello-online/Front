@@ -18,6 +18,7 @@ const Navbar = ({ userRole, userId }) => {
   const [notifications, setNotifications] = useState([]);
 
   const customerLinks = [
+    { label: 'Home', path: '/customer-dashboard' },
     { label: 'Waitlists', path: '/customer-dashboard/waitlists' },
     { label: 'Events/Appointments', path: '/customer-dashboard/events' },
     { label: 'About', path: '/customer-dashboard/about' },
@@ -25,6 +26,7 @@ const Navbar = ({ userRole, userId }) => {
   ];
 
   const businessLinks = [
+    { label: 'Home', path: '/business-dashboard' },
     { label: 'Waitlists', path: '/business-dashboard/waitlists' },
     { label: 'Events/Appointments', path: '/business-dashboard/events' },
     { label: 'About', path: '/business-dashboard/about' },
