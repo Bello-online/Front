@@ -34,13 +34,12 @@ const CustomerHistory = () => {
           params: { userId }
         });
 
-        // Transform the data to ensure all required fields are present
         const formattedHistory = response.data.map(waitlist => ({
           id: waitlist.id,
-          serviceName: waitlist.serviceName || 'Unknown Service',
-          dateJoined: waitlist.createdAt || waitlist.dateJoined || new Date().toISOString(),
-          waitTime: waitlist.waitTime ? `${waitlist.waitTime} mins` : 'N/A',
-          status: waitlist.status || 'Completed'
+          serviceName: waitlist.serviceName,
+          waitTime: waitlist.waitTime,
+          dateJoined: new Date().toISOString(),
+          status: 'Completed'
         }));
 
         setHistory(formattedHistory);
@@ -54,21 +53,6 @@ const CustomerHistory = () => {
 
     fetchHistory();
   }, [userId]);
-
-  // Add this function to format the date
-  const formatDate = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return 'Invalid Date';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,8 +85,8 @@ const CustomerHistory = () => {
                   {history.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>{item.serviceName}</TableCell>
-                      <TableCell>{formatDate(item.dateJoined)}</TableCell>
-                      <TableCell>{item.waitTime}</TableCell>
+                      <TableCell>{new Date(item.dateJoined).toLocaleString()}</TableCell>
+                      <TableCell>{item.waitTime} mins</TableCell>
                       <TableCell>{item.status}</TableCell>
                     </TableRow>
                   ))}
