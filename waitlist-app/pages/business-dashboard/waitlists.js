@@ -221,16 +221,65 @@ const BusinessWaitlistList = () => {
     // Add API call here
   };
 
+  const validateWaitlistData = (formData) => {
+    const errors = {};
+    
+    // Service Name validation
+    if (!formData.serviceName?.trim()) {
+      errors.serviceName = 'Service name is required';
+    }
+
+    // Wait Time validation
+    const waitTime = Number(formData.waitTime);
+    if (!formData.waitTime || isNaN(waitTime)) {
+      errors.waitTime = 'Wait time is required and must be a number';
+    } else if (waitTime < 0) {
+      errors.waitTime = 'Wait time cannot be negative';
+    }
+
+    // Max Capacity validation
+    const maxCapacity = Number(formData.maxCapacity);
+    if (!formData.maxCapacity || isNaN(maxCapacity)) {
+      errors.maxCapacity = 'Maximum capacity is required and must be a number';
+    } else if (maxCapacity <= 0) {
+      errors.maxCapacity = 'Maximum capacity must be greater than 0';
+    }
+
+    // Status validation
+    if (!formData.status?.trim()) {
+      errors.status = 'Status is required';
+    }
+
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  };
+
   const handleCreateWaitlist = async (formData) => {
+    const validation = validateWaitlistData(formData);
+    
+    if (!validation.isValid) {
+      const errorMessage = Object.values(validation.errors).join('\n');
+      setModalState({
+        isOpen: true,
+        title: 'Validation Error',
+        description: errorMessage,
+        confirmButton: 'OK'
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(`${API_URL}/api/waitlists`, {
         ...formData,
         ownerId: userId,
+        waitTime: Number(formData.waitTime),
+        maxCapacity: Number(formData.maxCapacity)
       });
       setWaitlists(prevWaitlists => [...prevWaitlists, response.data]);
       setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
       setShowCreateModal(false);
-      // Fetch updated waitlist data immediately
       fetchWaitlists();
     } catch (error) {
       console.error('Error creating waitlist:', error);
