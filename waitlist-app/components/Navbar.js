@@ -31,7 +31,7 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Waitlists', path: '/business-dashboard/waitlists' },
     { label: 'Events/Appointments', path: '/business-dashboard/events' },
     { label: 'About', path: '/business-dashboard/about' },
-    { label: 'Reports', path: '/business-dashboard/reports' },
+    // { label: 'Reports', path: '/business-dashboard/reports' },
   ];
 
   const links = userRole === 'business_owner' ? businessLinks : customerLinks;
