@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../../components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Clock } from "lucide-react";
 
 const CustomerHistory = () => {
   const userRole = 'customer';
-  const [waitlists, setWaitlists] = useState([]);
+  const [joinedWaitlists, setJoinedWaitlists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
@@ -17,9 +17,6 @@ const CustomerHistory = () => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
       setUserId(storedUserId);
-    } else {
-      setError("User ID not found. Please log in again.");
-      setLoading(false);
     }
   }, []);
 
@@ -29,19 +26,21 @@ const CustomerHistory = () => {
     const fetchJoinedWaitlists = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+        // First, get the IDs of joined waitlists
+        const joinedResponse = await axios.get(`${API_URL}/api/waitlists/joined`, {
           params: { userId }
         });
+
+        // Then, get all waitlists
+        const allWaitlistsResponse = await axios.get(`${API_URL}/api/waitlists`);
         
-        // Map the response to include the waitlist details
-        const joinedWaitlists = response.data.map(join => ({
-          id: join.id,
-          serviceName: join.serviceName,
-          location: join.location,
-          joinedAt: new Date(join.createdAt).toLocaleString()
-        }));
-        
-        setWaitlists(joinedWaitlists);
+        // Filter the waitlists to only show the ones the user has joined
+        const joinedIds = joinedResponse.data.map(join => join.waitlistId);
+        const joinedWaitlistsData = allWaitlistsResponse.data.filter(waitlist => 
+          joinedIds.includes(waitlist.id)
+        );
+
+        setJoinedWaitlists(joinedWaitlistsData);
       } catch (error) {
         console.error("Error fetching joined waitlists:", error);
         setError("Failed to load history. Please try again.");
@@ -65,21 +64,22 @@ const CustomerHistory = () => {
             </div>
           ) : error ? (
             <div className="text-red-500 text-center">{error}</div>
-          ) : waitlists.length > 0 ? (
-            waitlists.map((waitlist) => (
+          ) : joinedWaitlists.length > 0 ? (
+            joinedWaitlists.map((waitlist) => (
               <Card key={waitlist.id}>
                 <CardHeader>
                   <CardTitle>{waitlist.serviceName}</CardTitle>
                   <CardDescription>
-                    Joined on: {waitlist.joinedAt}
+                    {waitlist.location && `Location: ${waitlist.location}`}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {waitlist.location && (
-                    <p className="text-sm text-muted-foreground">
-                      Location: {waitlist.location}
-                    </p>
-                  )}
+                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                    <div className="flex items-center">
+                      <Clock className="mr-1 h-4 w-4" />
+                      <span>{waitlist.waitTime} mins</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))
