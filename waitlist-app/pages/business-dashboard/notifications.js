@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Bell, Check } from 'lucide-react'
+import Link from 'next/link';
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -50,13 +51,15 @@ const NotificationsPage = () => {
       <div className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-6">Notifications</h1>
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Bell className="mr-2" />
-              Recent Notifications
-            </CardTitle>
-            <CardDescription>Stay updated with your business activities</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Notifications</CardTitle>
+            <Link href="/customer-dashboard/notifications">
+              <a>
+                <Bell className="h-4 w-4 text-muted-foreground" />
+              </a>
+            </Link>
           </CardHeader>
+          <CardDescription>Stay updated with your business activities</CardDescription>
           <CardContent>
             <ScrollArea className="h-[400px] w-full rounded-md border p-4">
               {notifications.length > 0 ? (
