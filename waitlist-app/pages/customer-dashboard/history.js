@@ -30,24 +30,21 @@ const CustomerHistory = () => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
-          params: { userId }
-        });
-
-        const formattedHistory = response.data.map(join => ({
-          id: join.id,
-          serviceName: join.Waitlist?.serviceName || 'Unknown Service',
-          waitTime: join.Waitlist?.waitTime || 0,
-          dateJoined: join.createdAt,
-          status: 'Completed'
-        }));
-
-        console.log('API Response:', response.data);
-        console.log('Formatted History:', formattedHistory);
+        const response = await axios.get(`${API_URL}/api/notifications/${userId}`);
         
-        setHistory(formattedHistory);
+        // Filter and format notifications related to waitlist joins
+        const waitlistHistory = response.data
+          .filter(notif => notif.type === 'waitlist')
+          .map(notif => ({
+            id: notif.id,
+            message: notif.message,
+            date: notif.createdAt,
+            waitlistName: notif.waitlistName || 'Unknown Waitlist'
+          }));
+        
+        setHistory(waitlistHistory);
       } catch (error) {
-        console.error("Error fetching waitlist history:", error);
+        console.error("Error fetching history:", error);
         setError("Failed to load history. Please try again.");
       } finally {
         setLoading(false);
@@ -64,8 +61,8 @@ const CustomerHistory = () => {
         <h1 className="text-4xl font-bold mb-6">Your Waitlist History</h1>
         <Card>
           <CardHeader>
-            <CardTitle>Previously Joined Waitlists</CardTitle>
-            <CardDescription>A record of all the waitlists you've been part of</CardDescription>
+            <CardTitle>Waitlist Activity</CardTitle>
+            <CardDescription>A record of your waitlist joins and leaves</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -78,26 +75,24 @@ const CustomerHistory = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-semibold">Service Name</TableHead>
-                    <TableHead className="font-semibold">Date Joined</TableHead>
-                    <TableHead className="font-semibold">Wait Time</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead className="font-semibold">Waitlist</TableHead>
+                    <TableHead className="font-semibold">Activity</TableHead>
+                    <TableHead className="font-semibold">Date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {history.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell>{item.serviceName}</TableCell>
-                      <TableCell>{new Date(item.dateJoined).toLocaleString()}</TableCell>
-                      <TableCell>{item.waitTime} mins</TableCell>
-                      <TableCell>{item.status}</TableCell>
+                      <TableCell>{item.waitlistName}</TableCell>
+                      <TableCell>{item.message}</TableCell>
+                      <TableCell>{new Date(item.date).toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
               <p className="text-center text-muted-foreground">
-                You haven't joined any waitlists yet.
+                No waitlist activity found.
               </p>
             )}
           </CardContent>
