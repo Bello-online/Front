@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Bell } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
 const BusinessWaitlistList = () => {
   const [waitlists, setWaitlists] = useState([]);
@@ -21,6 +22,13 @@ const BusinessWaitlistList = () => {
   const customersPerPage = 4;
   const userRole = 'business_owner';
   const [userId, setUserId] = useState(null);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    title: '',
+    description: '',
+    confirmButton: '',
+    onConfirm: null
+  });
 
   const searchFields = [
     { name: 'serviceName', label: 'Service Name', type: 'text', placeholder: 'Search by service name' },
@@ -151,9 +159,38 @@ const BusinessWaitlistList = () => {
     }));
   };
 
-  const handleRemoveCustomer = (customerId) => {
-    console.log(`Removing customer with ID ${customerId}`);
-    // Add API call here
+  const handleRemoveCustomer = async (waitlistId, customerId, customerName) => {
+    setModalState({
+      isOpen: true,
+      title: 'Remove Customer',
+      description: `Are you sure you want to remove ${customerName} from the waitlist?`,
+      confirmButton: 'Remove',
+      onConfirm: async () => {
+        try {
+          await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/remove`, {
+            data: { customerId }
+          });
+          
+          // Update the customers list after removal
+          const response = await axios.get(`${API_URL}/api/waitlists/${waitlistId}/customers`);
+          setCustomersByWaitlist((prev) => ({
+            ...prev,
+            [waitlistId]: response.data,
+          }));
+          
+          setModalState({ isOpen: false });
+        } catch (error) {
+          console.error('Error removing customer:', error);
+          setModalState({
+            isOpen: true,
+            title: 'Error',
+            description: 'Failed to remove customer. Please try again.',
+            confirmButton: 'Close',
+            onConfirm: () => setModalState({ isOpen: false })
+          });
+        }
+      }
+    });
   };
 
   const handleNotifyCustomer = (customerId) => {
@@ -220,6 +257,7 @@ const BusinessWaitlistList = () => {
                         <TableHead>Status</TableHead>
                         <TableHead>Wait Time</TableHead>
                         <TableHead>Phone Number</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -229,7 +267,19 @@ const BusinessWaitlistList = () => {
                           <TableCell>{waitlist.status}</TableCell>
                           <TableCell>{waitlist.waitTime} mins</TableCell>
                           <TableCell>{customer.User.phone}</TableCell>
-                          {/* Business owners should not be able to remove customers from waitlists */}
+                          <TableCell>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleRemoveCustomer(
+                                waitlist.id, 
+                                customer.id,
+                                customer.User.username
+                              )}
+                            >
+                              Remove
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -261,6 +311,24 @@ const BusinessWaitlistList = () => {
           </Card>
         ))}
       </div>
+      {modalState.isOpen && (
+        <Dialog open={modalState.isOpen} onOpenChange={() => setModalState({ isOpen: false })}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{modalState.title}</DialogTitle>
+              <DialogDescription>{modalState.description}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setModalState({ isOpen: false })}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={modalState.onConfirm}>
+                {modalState.confirmButton}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
