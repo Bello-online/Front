@@ -23,33 +23,36 @@ const CustomerHistory = () => {
   useEffect(() => {
     if (!userId) return;
 
-    const fetchJoinedWaitlists = async () => {
+    const fetchHistory = async () => {
       try {
         setLoading(true);
-        // First, get the IDs of joined waitlists
-        const joinedResponse = await axios.get(`${API_URL}/api/waitlists/joined`, {
-          params: { userId }
+        // Get both waitlist and user information
+        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+          params: { 
+            userId,
+            includeWaitlist: true  // Add this parameter to get full waitlist details
+          }
         });
-
-        // Then, get all waitlists
-        const allWaitlistsResponse = await axios.get(`${API_URL}/api/waitlists`);
         
-        // Filter the waitlists to only show the ones the user has joined
-        const joinedIds = joinedResponse.data.map(join => join.waitlistId);
-        const joinedWaitlistsData = allWaitlistsResponse.data.filter(waitlist => 
-          joinedIds.includes(waitlist.id)
-        );
-
-        setJoinedWaitlists(joinedWaitlistsData);
+        console.log('API Response:', response.data); // Debug the response
+        
+        const joinHistory = response.data.map(join => ({
+          id: join.id,
+          serviceName: join.Waitlist.serviceName,
+          message: `You joined ${join.Waitlist.serviceName}`,
+          date: new Date(join.createdAt).toLocaleString()
+        }));
+        
+        setJoinedWaitlists(joinHistory);
       } catch (error) {
-        console.error("Error fetching joined waitlists:", error);
+        console.error("Error fetching history:", error);
         setError("Failed to load history. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJoinedWaitlists();
+    fetchHistory();
   }, [userId]);
 
   return (
