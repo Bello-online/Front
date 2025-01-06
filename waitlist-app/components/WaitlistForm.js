@@ -110,7 +110,7 @@ const WaitlistForm = () => {
             />
           </div>
           <Button asChild type="submit">
-            <Link href="/business-dashboard/waitlists">
+            <Link href="/business-dashboard/">
               Create Waitlist
             </Link>
           </Button>
