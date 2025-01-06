@@ -225,9 +225,6 @@ const BusinessWaitlistList = () => {
         ...formData,
         ownerId: userId,
       });
-      
-      // Close the modal and refresh the page
-      setShowCreateModal(false);
       window.location.reload();
     } catch (error) {
       console.error('Error creating waitlist:', error);
