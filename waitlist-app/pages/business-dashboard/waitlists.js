@@ -168,7 +168,7 @@ const BusinessWaitlistList = () => {
       onConfirm: async () => {
         try {
           await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, { 
-            data: { userId: customer.User.id } 
+            data: { userId: customerId } 
           });
           
           // Update the customers list after removal
