@@ -167,8 +167,8 @@ const BusinessWaitlistList = () => {
       confirmButton: 'Remove',
       onConfirm: async () => {
         try {
-          await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, {
-            data: { userId: customerId }
+          await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, { 
+            data: { userId: customerId } 
           });
           
           // Update the customers list after removal
@@ -190,8 +190,8 @@ const BusinessWaitlistList = () => {
           setModalState({
             isOpen: true,
             title: 'Error',
-            description: 'Failed to remove customer. Please try again.',
-            confirmButton: 'Close',
+            description: 'Could not remove customer from the waitlist.',
+            confirmButton: 'OK',
             onConfirm: () => setModalState({ 
               isOpen: false,
               title: '',
