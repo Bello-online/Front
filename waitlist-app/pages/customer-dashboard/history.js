@@ -31,14 +31,19 @@ const CustomerHistory = () => {
       try {
         setLoading(true);
         const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
-          params: { userId }
+          params: { 
+            userId,
+            includeWaitlist: true
+          }
         });
+        
+        console.log('API Response:', response.data);
         
         const joinHistory = response.data.map(join => ({
           id: join.id,
-          serviceName: join.Waitlist?.serviceName || 'Unknown Service',
-          message: `You joined ${join.Waitlist?.serviceName || 'a waitlist'}`,
-          date: join.createdAt
+          serviceName: join.Waitlist.serviceName,
+          message: `You joined ${join.Waitlist.serviceName}`,
+          date: new Date(join.createdAt).toLocaleString()
         }));
         
         setHistory(joinHistory);
@@ -84,7 +89,7 @@ const CustomerHistory = () => {
                     <TableRow key={item.id}>
                       <TableCell>{item.serviceName}</TableCell>
                       <TableCell>{item.message}</TableCell>
-                      <TableCell>{new Date(item.date).toLocaleString()}</TableCell>
+                      <TableCell>{item.date}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
