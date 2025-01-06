@@ -32,7 +32,16 @@ const CustomerHistory = () => {
         const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
           params: { userId }
         });
-        setWaitlists(response.data);
+        
+        // Map the response to include the waitlist details
+        const joinedWaitlists = response.data.map(join => ({
+          id: join.id,
+          serviceName: join.serviceName,
+          location: join.location,
+          joinedAt: new Date(join.createdAt).toLocaleString()
+        }));
+        
+        setWaitlists(joinedWaitlists);
       } catch (error) {
         console.error("Error fetching joined waitlists:", error);
         setError("Failed to load history. Please try again.");
@@ -60,11 +69,18 @@ const CustomerHistory = () => {
             waitlists.map((waitlist) => (
               <Card key={waitlist.id}>
                 <CardHeader>
-                  <CardTitle>{waitlist.Waitlist?.serviceName || 'Unknown Service'}</CardTitle>
+                  <CardTitle>{waitlist.serviceName}</CardTitle>
                   <CardDescription>
-                    You are joined in this waitlist
+                    Joined on: {waitlist.joinedAt}
                   </CardDescription>
                 </CardHeader>
+                <CardContent>
+                  {waitlist.location && (
+                    <p className="text-sm text-muted-foreground">
+                      Location: {waitlist.location}
+                    </p>
+                  )}
+                </CardContent>
               </Card>
             ))
           ) : (
