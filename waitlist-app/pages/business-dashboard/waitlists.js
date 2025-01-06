@@ -204,7 +204,6 @@ const BusinessWaitlistList = () => {
                         <TableHead>Status</TableHead>
                         <TableHead>Wait Time</TableHead>
                         <TableHead>Phone Number</TableHead>
-                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -214,14 +213,7 @@ const BusinessWaitlistList = () => {
                           <TableCell>{waitlist.status}</TableCell>
                           <TableCell>{waitlist.waitTime} mins</TableCell>
                           <TableCell>{customer.User.phone}</TableCell>
-                          <TableCell>
-                            <Button variant="destructive" size="sm" onClick={() => handleRemoveCustomer(customer.id)} className="mr-2">
-                              Remove
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleNotifyCustomer(customer.id)}>
-                              Notify
-                            </Button>
-                          </TableCell>
+                          {/* Business owners should not be able to remove customers from waitlists */}
                         </TableRow>
                       ))}
                     </TableBody>

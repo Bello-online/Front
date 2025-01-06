@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import Link from 'next/link';
 
 const Navbar = ({ userRole, userId }) => {
   const router = useRouter();
@@ -23,6 +24,7 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Events/Appointments', path: '/customer-dashboard/events' },
     { label: 'About', path: '/customer-dashboard/about' },
     { label: 'History', path: '/customer-dashboard/history' },
+    { label: 'Notifications', path: '/customer-dashboard/notifications' },
   ];
 
   const businessLinks = [
@@ -31,6 +33,7 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Events/Appointments', path: '/business-dashboard/events' },
     { label: 'About', path: '/business-dashboard/about' },
     { label: 'Reports', path: '/business-dashboard/reports' },
+    { label: 'Notifications', path: '/business-dashboard/notifications' },
   ];
 
   const links = userRole === 'business_owner' ? businessLinks : customerLinks;
@@ -67,29 +70,34 @@ const Navbar = ({ userRole, userId }) => {
               </li>
             ))}
           </ul>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
-                    {unreadCount}
-                  </span>
+          <div className="flex items-center space-x-4">
+            <Link href={userRole === 'business_owner' ? '/business-dashboard/notifications' : '/customer-dashboard/notifications'}>
+              <a className="text-primary-foreground">Notifications</a>
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem key={notification.id}>
+                      {notification.message}
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem>No notifications</DropdownMenuItem>
                 )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {notifications.length > 0 ? (
-                notifications.map((notification) => (
-                  <DropdownMenuItem key={notification.id}>
-                    {notification.message}
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <DropdownMenuItem>No notifications</DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </nav>
