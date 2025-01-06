@@ -27,20 +27,23 @@ const CustomerDashboard = () => {
 
     const fetchCounts = async () => {
       try {
-        // Fetch waitlist count
+        // Fetch joined waitlists count - using the endpoint from CustomerWaitlists
         const waitlistResponse = await axios.get(`${API_URL}/api/waitlists/joined`, {
-          params: { userId }
+          params: { 
+            userId,
+            includeWaitlist: true
+          }
         });
         setHistoryCount(waitlistResponse.data.length);
 
-        // Fetch events count
-        const eventsResponse = await axios.get(`${API_URL}/api/events/joined`, {
-          params: { userId }
-        });
+        // Fetch joined events count - using the endpoint from CustomerEvents
+        const eventsResponse = await axios.get(
+          `${API_URL}/api/events/participants/user/${userId}`
+        );
         setEventsCount(eventsResponse.data.length);
 
         // Fetch notifications count
-        const notificationsResponse = await axios.get(`${API_URL}/api/notifications/${userId}`);
+        const notificationsResponse = await axios.get(`${API_URL}/api/waitlists/notifications`);
         setNotificationsCount(notificationsResponse.data.length);
 
       } catch (error) {
