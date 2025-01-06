@@ -23,7 +23,7 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Waitlists', path: '/customer-dashboard/waitlists' },
     { label: 'Events/Appointments', path: '/customer-dashboard/events' },
     { label: 'About', path: '/customer-dashboard/about' },
-    { label: 'History', path: '/customer-dashboard/history' },
+    // { label: 'History', path: '/customer-dashboard/history' },
   ];
 
   const businessLinks = [
