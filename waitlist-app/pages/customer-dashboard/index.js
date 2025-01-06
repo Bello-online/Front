@@ -26,8 +26,8 @@ const CustomerDashboard = () => {
     if (!userId) return;
 
     const fetchCounts = async () => {
+      // Fetch waitlist count
       try {
-        // Fetch joined waitlists count - using the endpoint from CustomerWaitlists
         const waitlistResponse = await axios.get(`${API_URL}/api/waitlists/joined`, {
           params: { 
             userId,
@@ -35,21 +35,28 @@ const CustomerDashboard = () => {
           }
         });
         setHistoryCount(waitlistResponse.data.length);
+      } catch (error) {
+        console.error('Error fetching waitlist count:', error);
+        setHistoryCount(0);
+      }
 
-        // Fetch joined events count - using the endpoint from CustomerEvents
+      // Fetch events count
+      try {
         const eventsResponse = await axios.get(
           `${API_URL}/api/events/participants/user/${userId}`
         );
         setEventsCount(eventsResponse.data.length);
+      } catch (error) {
+        console.error('Error fetching events count:', error);
+        setEventsCount(0);
+      }
 
-        // Fetch notifications count
+      // Fetch notifications count
+      try {
         const notificationsResponse = await axios.get(`${API_URL}/api/waitlists/notifications`);
         setNotificationsCount(notificationsResponse.data.length);
-
       } catch (error) {
-        console.error('Error fetching counts:', error);
-        setHistoryCount(0);
-        setEventsCount(0);
+        console.error('Error fetching notifications count:', error);
         setNotificationsCount(0);
       }
     };
