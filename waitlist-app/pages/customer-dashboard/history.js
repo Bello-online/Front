@@ -30,19 +30,18 @@ const CustomerHistory = () => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/notifications/${userId}`);
+        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+          params: { userId }
+        });
         
-        // Filter and format notifications related to waitlist joins
-        const waitlistHistory = response.data
-          .filter(notif => notif.type === 'waitlist')
-          .map(notif => ({
-            id: notif.id,
-            message: notif.message,
-            date: notif.createdAt,
-            waitlistName: notif.waitlistName || 'Unknown Waitlist'
-          }));
+        const joinHistory = response.data.map(join => ({
+          id: join.id,
+          serviceName: join.Waitlist?.serviceName || 'Unknown Service',
+          message: `You joined ${join.Waitlist?.serviceName || 'a waitlist'}`,
+          date: join.createdAt
+        }));
         
-        setHistory(waitlistHistory);
+        setHistory(joinHistory);
       } catch (error) {
         console.error("Error fetching history:", error);
         setError("Failed to load history. Please try again.");
@@ -62,7 +61,7 @@ const CustomerHistory = () => {
         <Card>
           <CardHeader>
             <CardTitle>Waitlist Activity</CardTitle>
-            <CardDescription>A record of your waitlist joins and leaves</CardDescription>
+            <CardDescription>A record of waitlists you've joined</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -75,7 +74,7 @@ const CustomerHistory = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-semibold">Waitlist</TableHead>
+                    <TableHead className="font-semibold">Service</TableHead>
                     <TableHead className="font-semibold">Activity</TableHead>
                     <TableHead className="font-semibold">Date</TableHead>
                   </TableRow>
@@ -83,7 +82,7 @@ const CustomerHistory = () => {
                 <TableBody>
                   {history.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell>{item.waitlistName}</TableCell>
+                      <TableCell>{item.serviceName}</TableCell>
                       <TableCell>{item.message}</TableCell>
                       <TableCell>{new Date(item.date).toLocaleString()}</TableCell>
                     </TableRow>
@@ -92,7 +91,7 @@ const CustomerHistory = () => {
               </Table>
             ) : (
               <p className="text-center text-muted-foreground">
-                No waitlist activity found.
+                You haven't joined any waitlists yet.
               </p>
             )}
           </CardContent>
