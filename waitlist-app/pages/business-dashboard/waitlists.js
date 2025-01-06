@@ -221,15 +221,14 @@ const BusinessWaitlistList = () => {
 
   const handleCreateWaitlist = async (formData) => {
     try {
-      const response = await axios.post(`${API_URL}/api/waitlists`, {
+      await axios.post(`${API_URL}/api/waitlists`, {
         ...formData,
         ownerId: userId,
       });
       
-      // Wait for the POST request to complete before fetching updated data
-      await fetchWaitlists();
-      
+      // Close the modal and refresh the page
       setShowCreateModal(false);
+      window.location.reload();
     } catch (error) {
       console.error('Error creating waitlist:', error);
       setModalState({
