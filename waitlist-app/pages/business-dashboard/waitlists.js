@@ -225,7 +225,8 @@ const BusinessWaitlistList = () => {
         ...formData,
         ownerId: userId,
       });
-      window.location.reload();
+      // Redirect to the same page using Next.js router
+      window.location.href = '/business-dashboard/waitlists';
     } catch (error) {
       console.error('Error creating waitlist:', error);
       setModalState({
