@@ -54,13 +54,14 @@ const LoginPage = () => {
       const { role, userId, username } = response.data;
 
       localStorage.setItem('userId', userId);
+      localStorage.setItem('userRole', role);
       localStorage.setItem('username', username);
 
-      if (role === 'business_owner') {
-        router.push('/business-dashboard');
-      } else {
-        router.push('/customer-dashboard');
-      }
+      // Force a full page reload and redirect
+      window.location.href = role === 'business_owner' 
+        ? '/business-dashboard' 
+        : '/customer-dashboard';
+      
     } catch (error) {
       console.error('Error during login:', error);
       setErrors({ general: 'Invalid username or password' });
