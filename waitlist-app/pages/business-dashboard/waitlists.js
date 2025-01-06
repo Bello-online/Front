@@ -11,6 +11,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Bell } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { sanitizeSearchParams } from '../../utils/sanitizeQuery';
 
 const BusinessWaitlistList = () => {
   const [waitlists, setWaitlists] = useState([]);
@@ -38,12 +39,15 @@ const BusinessWaitlistList = () => {
   ];
 
   const handleSearch = async (searchParams) => {
+    // Sanitize the search parameters first
+    const sanitizedParams = sanitizeSearchParams(searchParams);
+    
     try {
       const queryParams = new URLSearchParams();
-      if (searchParams.query) queryParams.append('query', searchParams.query);
-      if (searchParams.ranges) queryParams.append('ranges', JSON.stringify(searchParams.ranges));
+      if (sanitizedParams.query) queryParams.append('query', sanitizedParams.query);
+      if (sanitizedParams.ranges) queryParams.append('ranges', JSON.stringify(sanitizedParams.ranges));
       
-      Object.entries(searchParams).forEach(([key, value]) => {
+      Object.entries(sanitizedParams).forEach(([key, value]) => {
         if (key !== 'query' && key !== 'ranges' && value) {
           queryParams.append(key, value);
         }
@@ -53,11 +57,11 @@ const BusinessWaitlistList = () => {
       setFilteredWaitlists(response.data);
     } catch (error) {
       console.error('Error searching waitlists:', error);
-      // Fallback to frontend filtering
+      // Keep existing fallback logic
       let results = waitlists;
 
-      if (searchParams.query) {
-        const query = searchParams.query.toLowerCase();
+      if (sanitizedParams.query) {
+        const query = sanitizedParams.query.toLowerCase();
         results = results.filter(waitlist => 
           waitlist.serviceName.toLowerCase().includes(query) ||
           waitlist.status.toLowerCase().includes(query) ||
@@ -65,8 +69,9 @@ const BusinessWaitlistList = () => {
         );
       }
 
-      if (searchParams.ranges) {
-        Object.entries(searchParams.ranges).forEach(([field, range]) => {
+      // Keep existing range filtering logic
+      if (sanitizedParams.ranges) {
+        Object.entries(sanitizedParams.ranges).forEach(([field, range]) => {
           if (range.min) {
             results = results.filter(waitlist => waitlist[field] >= Number(range.min));
           }
