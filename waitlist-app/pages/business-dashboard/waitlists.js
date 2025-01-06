@@ -167,17 +167,22 @@ const BusinessWaitlistList = () => {
       confirmButton: 'Remove',
       onConfirm: async () => {
         try {
-          await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, { 
-            data: { userId: customerId } 
+          // First, remove the customer
+          await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, {
+            data: { userId: customerId }
           });
           
-          const response = await axios.get(`${API_URL}/api/waitlists/${waitlistId}/customers`);
+          // Then refresh the customers list for this waitlist
+          const updatedCustomers = await axios.get(`${API_URL}/api/waitlists/${waitlistId}/customers`);
+          
+          // Update the state with new customer list
           setCustomersByWaitlist(prev => ({
             ...prev,
-            [waitlistId]: response.data
+            [waitlistId]: updatedCustomers.data
           }));
           
-          setModalState({ 
+          // Close the modal
+          setModalState({
             isOpen: false,
             title: '',
             description: '',
@@ -185,13 +190,18 @@ const BusinessWaitlistList = () => {
             onConfirm: null
           });
         } catch (error) {
-          console.error('Error removing customer:', error);
+          console.error('Error details:', {
+            waitlistId,
+            customerId,
+            error: error.response?.data || error.message
+          });
+          
           setModalState({
             isOpen: true,
             title: 'Error',
-            description: error.response?.data?.message || 'Could not remove customer from the waitlist.',
+            description: 'Could not remove customer from the waitlist.',
             confirmButton: 'OK',
-            onConfirm: () => setModalState({ 
+            onConfirm: () => setModalState({
               isOpen: false,
               title: '',
               description: '',
