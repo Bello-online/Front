@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from 'next/link'
 
 const WaitlistForm = () => {
   const [formData, setFormData] = useState({
@@ -108,7 +109,11 @@ const WaitlistForm = () => {
               placeholder="Enter phone number"
             />
           </div>
-          <Button type="submit">Create Waitlist</Button>
+          <Button asChild type="submit">
+            <Link href="/business-dashboard/waitlists">
+              Create Waitlist
+            </Link>
+          </Button>
         </form>
       </CardContent>
     </Card>
