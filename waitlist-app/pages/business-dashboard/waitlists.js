@@ -168,7 +168,7 @@ const BusinessWaitlistList = () => {
       onConfirm: async () => {
         try {
           await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, { 
-            data: { userId: customerId } 
+            data: { userId: customer.User.id } 
           });
           
           // Update the customers list after removal
@@ -283,7 +283,7 @@ const BusinessWaitlistList = () => {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleRemoveCustomer(waitlist.id, customer.id, customer.User.username)}
+                              onClick={() => handleRemoveCustomer(waitlist.id, customer.User.id, customer.User.username)}
                             >
                               Remove
                             </Button>
