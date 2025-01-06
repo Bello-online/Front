@@ -283,11 +283,7 @@ const BusinessWaitlistList = () => {
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleRemoveCustomer(
-                                waitlist.id, 
-                                customer.id,
-                                customer.User.username
-                              )}
+                              onClick={() => handleRemoveCustomer(waitlist.id, customer.id, customer.User.username)}
                             >
                               Remove
                             </Button>
