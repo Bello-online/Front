@@ -24,7 +24,6 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Events/Appointments', path: '/customer-dashboard/events' },
     { label: 'About', path: '/customer-dashboard/about' },
     { label: 'History', path: '/customer-dashboard/history' },
-    { label: 'Notifications', path: '/customer-dashboard/notifications' },
   ];
 
   const businessLinks = [
@@ -33,7 +32,6 @@ const Navbar = ({ userRole, userId }) => {
     { label: 'Events/Appointments', path: '/business-dashboard/events' },
     { label: 'About', path: '/business-dashboard/about' },
     { label: 'Reports', path: '/business-dashboard/reports' },
-    { label: 'Notifications', path: '/business-dashboard/notifications' },
   ];
 
   const links = userRole === 'business_owner' ? businessLinks : customerLinks;
