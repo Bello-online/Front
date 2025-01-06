@@ -87,20 +87,22 @@ const BusinessWaitlistList = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchWaitlists = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/waitlists`, {
-          params: { ownerId: userId },
-        });
-        setWaitlists(response.data);
-        setFilteredWaitlists(response.data);
-      } catch (error) {
-        console.error('Error fetching waitlists:', error);
-      }
-    };
+  const fetchWaitlists = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/waitlists`, {
+        params: { ownerId: userId },
+      });
+      setWaitlists(response.data);
+      setFilteredWaitlists(response.data);
+    } catch (error) {
+      console.error('Error fetching waitlists:', error);
+    }
+  };
 
-    fetchWaitlists();
+  useEffect(() => {
+    if (userId) {
+      fetchWaitlists();
+    }
   }, [userId]);
 
   const fetchNotifications = async () => {
@@ -229,11 +231,7 @@ const BusinessWaitlistList = () => {
       setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
       setShowCreateModal(false);
       // Fetch updated waitlist data immediately
-      const updatedResponse = await axios.get(`${API_URL}/api/waitlists`, {
-        params: { ownerId: userId },
-      });
-      setWaitlists(updatedResponse.data);
-      setFilteredWaitlists(updatedResponse.data);
+      fetchWaitlists();
     } catch (error) {
       console.error('Error creating waitlist:', error);
       setModalState({
