@@ -11,6 +11,8 @@ import axios from 'axios';
 const CustomerDashboard = () => {
   const userRole = 'customer';
   const [historyCount, setHistoryCount] = useState(0);
+  const [eventsCount, setEventsCount] = useState(0);
+  const [notificationsCount, setNotificationsCount] = useState(0);
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -23,19 +25,33 @@ const CustomerDashboard = () => {
   useEffect(() => {
     if (!userId) return;
 
-    const fetchJoinedWaitlists = async () => {
+    const fetchCounts = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/waitlists/joined`, {
+        // Fetch waitlist count
+        const waitlistResponse = await axios.get(`${API_URL}/api/waitlists/joined`, {
           params: { userId }
         });
-        setHistoryCount(response.data.length);
+        setHistoryCount(waitlistResponse.data.length);
+
+        // Fetch events count
+        const eventsResponse = await axios.get(`${API_URL}/api/events/joined`, {
+          params: { userId }
+        });
+        setEventsCount(eventsResponse.data.length);
+
+        // Fetch notifications count
+        const notificationsResponse = await axios.get(`${API_URL}/api/notifications/${userId}`);
+        setNotificationsCount(notificationsResponse.data.length);
+
       } catch (error) {
-        console.error('Error fetching history count:', error);
+        console.error('Error fetching counts:', error);
         setHistoryCount(0);
+        setEventsCount(0);
+        setNotificationsCount(0);
       }
     };
 
-    fetchJoinedWaitlists();
+    fetchCounts();
   }, [userId]);
 
   return (
@@ -55,8 +71,10 @@ const CustomerDashboard = () => {
                 <ClipboardList className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">You're currently in 3 waitlists</p>
+                <div className="text-2xl font-bold">{historyCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  You're currently in {historyCount} waitlist{historyCount !== 1 ? 's' : ''}
+                </p>
                 <Button asChild className="w-full mt-4">
                   <Link href="/customer-dashboard/waitlists">View Waitlists</Link>
                 </Button>
@@ -68,8 +86,10 @@ const CustomerDashboard = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">2</div>
-                <p className="text-xs text-muted-foreground">You have 2 upcoming events</p>
+                <div className="text-2xl font-bold">{eventsCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  You have {eventsCount} upcoming event{eventsCount !== 1 ? 's' : ''}
+                </p>
                 <Button asChild className="w-full mt-4">
                   <Link href="/customer-dashboard/events">View Events</Link>
                 </Button>
@@ -81,8 +101,10 @@ const CustomerDashboard = () => {
                 <Bell className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">5</div>
-                <p className="text-xs text-muted-foreground">You have 5 unread notifications</p>
+                <div className="text-2xl font-bold">{notificationsCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  You have {notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}
+                </p>
                 <Button asChild className="w-full mt-4">
                   <Link href="/customer-dashboard/notifications">View Notifications</Link>
                 </Button>
