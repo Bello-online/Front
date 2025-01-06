@@ -221,12 +221,19 @@ const BusinessWaitlistList = () => {
 
   const handleCreateWaitlist = async (formData) => {
     try {
-      await axios.post(`${API_URL}/api/waitlists`, {
+      const response = await axios.post(`${API_URL}/api/waitlists`, {
         ...formData,
         ownerId: userId,
       });
-      // Redirect to the same page using Next.js router
-      window.location.href = '/business-dashboard/waitlists';
+      setWaitlists(prevWaitlists => [...prevWaitlists, response.data]);
+      setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
+      setShowCreateModal(false);
+      // Fetch updated waitlist data immediately
+      const updatedResponse = await axios.get(`${API_URL}/api/waitlists`, {
+        params: { ownerId: userId },
+      });
+      setWaitlists(updatedResponse.data);
+      setFilteredWaitlists(updatedResponse.data);
     } catch (error) {
       console.error('Error creating waitlist:', error);
       setModalState({
