@@ -22,6 +22,26 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleLoginSubmit = async (formData) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/login`, formData);
+      if (response.data.success) {
+        // Store user data
+        localStorage.setItem('userId', response.data.user.id);
+        localStorage.setItem('userRole', response.data.user.role);
+        localStorage.setItem('username', response.data.user.username);
+        
+        // Force a full page reload and redirect
+        window.location.href = response.data.user.role === 'business_owner' 
+          ? '/business-dashboard' 
+          : '/customer-dashboard';
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // Handle login error (show error message, etc.)
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm();

@@ -27,7 +27,7 @@ const Header = () => {
     localStorage.removeItem('userRole');
     localStorage.removeItem('username');
     setShowLogoutModal(false);
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   return (

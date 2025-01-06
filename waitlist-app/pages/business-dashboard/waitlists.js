@@ -161,6 +161,22 @@ const BusinessWaitlistList = () => {
     // Add API call here
   };
 
+  const handleCreateWaitlist = async (formData) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/waitlists`, {
+        ...formData,
+        ownerId: userId,
+      });
+      setWaitlists(prevWaitlists => [...prevWaitlists, response.data]);
+      setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
+      setShowCreateModal(false);
+      // Fetch updated waitlist data immediately
+      fetchWaitlists();
+    } catch (error) {
+      console.error('Error creating waitlist:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar userRole="business_owner" userId={userId} />
