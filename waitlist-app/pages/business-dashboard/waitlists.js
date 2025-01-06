@@ -225,13 +225,19 @@ const BusinessWaitlistList = () => {
         ...formData,
         ownerId: userId,
       });
-      setWaitlists(prevWaitlists => [...prevWaitlists, response.data]);
-      setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
+      
+      // Wait for the POST request to complete before fetching updated data
+      await fetchWaitlists();
+      
       setShowCreateModal(false);
-      // Fetch updated waitlist data immediately
-      fetchWaitlists();
     } catch (error) {
       console.error('Error creating waitlist:', error);
+      setModalState({
+        isOpen: true,
+        title: 'Error',
+        description: 'Could not create the waitlist.',
+        confirmButton: 'OK'
+      });
     }
   };
 
