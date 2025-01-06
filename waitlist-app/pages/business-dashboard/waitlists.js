@@ -278,7 +278,7 @@ const BusinessWaitlistList = () => {
                         <TableHead>Status</TableHead>
                         <TableHead>Wait Time</TableHead>
                         <TableHead>Phone Number</TableHead>
-                        <TableHead>Actions</TableHead>
+                        {/* <TableHead>Actions</TableHead> */}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -288,7 +288,7 @@ const BusinessWaitlistList = () => {
                           <TableCell>{waitlist.status}</TableCell>
                           <TableCell>{waitlist.waitTime} mins</TableCell>
                           <TableCell>{customer.User.phone}</TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <Button
                               variant="destructive"
                               size="sm"
@@ -296,7 +296,8 @@ const BusinessWaitlistList = () => {
                             >
                               Remove
                             </Button>
-                          </TableCell>
+                          </TableCell> */}
+                          
                         </TableRow>
                       ))}
                     </TableBody>
