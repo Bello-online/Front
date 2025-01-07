@@ -166,65 +166,6 @@ const BusinessWaitlistList = () => {
     }));
   };
 
-  const handleRemoveCustomer = async (waitlistId, customerId, customerName) => {
-    setModalState({
-      isOpen: true,
-      title: 'Remove Customer',
-      description: `Are you sure you want to remove ${customerName} from the waitlist?`,
-      confirmButton: 'Remove',
-      onConfirm: async () => {
-        try {
-          // First, remove the customer
-          await axios.delete(`${API_URL}/api/waitlists/${waitlistId}/leave`, {
-            data: { userId: customerId }
-          });
-          
-          // Then refresh the customers list for this waitlist
-          const updatedCustomers = await axios.get(`${API_URL}/api/waitlists/${waitlistId}/customers`);
-          
-          // Update the state with new customer list
-          setCustomersByWaitlist(prev => ({
-            ...prev,
-            [waitlistId]: updatedCustomers.data
-          }));
-          
-          // Close the modal
-          setModalState({
-            isOpen: false,
-            title: '',
-            description: '',
-            confirmButton: '',
-            onConfirm: null
-          });
-        } catch (error) {
-          console.error('Error details:', {
-            waitlistId,
-            customerId,
-            error: error.response?.data || error.message
-          });
-          
-          setModalState({
-            isOpen: true,
-            title: 'Error',
-            description: 'Could not remove customer from the waitlist.',
-            confirmButton: 'OK',
-            onConfirm: () => setModalState({
-              isOpen: false,
-              title: '',
-              description: '',
-              confirmButton: '',
-              onConfirm: null
-            })
-          });
-        }
-      }
-    });
-  };
-
-  const handleNotifyCustomer = (customerId) => {
-    console.log(`Notifying customer with ID ${customerId}`);
-    // Add API call here
-  };
 
   const validateWaitlistData = (formData) => {
     const errors = {};
@@ -282,9 +223,14 @@ const BusinessWaitlistList = () => {
         waitTime: Number(formData.waitTime),
         maxCapacity: Number(formData.maxCapacity)
       });
-      setWaitlists(prevWaitlists => [...prevWaitlists, response.data]);
-      setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
+
+      // Update both states immediately with the new waitlist
+      const newWaitlist = response.data;
+      setWaitlists(prevWaitlists => [...prevWaitlists, newWaitlist]);
+      setFilteredWaitlists(prevFiltered => [...prevFiltered, newWaitlist]);
       setShowCreateModal(false);
+      
+      // Optional: Fetch fresh data from server
       fetchWaitlists();
     } catch (error) {
       console.error('Error creating waitlist:', error);
