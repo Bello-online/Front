@@ -11,7 +11,6 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Bell } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { sanitizeSearchParams } from '../../utils/sanitizeQuery';
 
 const BusinessWaitlistList = () => {
   const [waitlists, setWaitlists] = useState([]);
@@ -39,15 +38,12 @@ const BusinessWaitlistList = () => {
   ];
 
   const handleSearch = async (searchParams) => {
-    // Sanitize the search parameters first
-    const sanitizedParams = sanitizeSearchParams(searchParams);
-    
     try {
       const queryParams = new URLSearchParams();
-      if (sanitizedParams.query) queryParams.append('query', sanitizedParams.query);
-      if (sanitizedParams.ranges) queryParams.append('ranges', JSON.stringify(sanitizedParams.ranges));
+      if (searchParams.query) queryParams.append('query', searchParams.query);
+      if (searchParams.ranges) queryParams.append('ranges', JSON.stringify(searchParams.ranges));
       
-      Object.entries(sanitizedParams).forEach(([key, value]) => {
+      Object.entries(searchParams).forEach(([key, value]) => {
         if (key !== 'query' && key !== 'ranges' && value) {
           queryParams.append(key, value);
         }
@@ -57,11 +53,11 @@ const BusinessWaitlistList = () => {
       setFilteredWaitlists(response.data);
     } catch (error) {
       console.error('Error searching waitlists:', error);
-      // Keep existing fallback logic
+      // Fallback to frontend filtering
       let results = waitlists;
 
-      if (sanitizedParams.query) {
-        const query = sanitizedParams.query.toLowerCase();
+      if (searchParams.query) {
+        const query = searchParams.query.toLowerCase();
         results = results.filter(waitlist => 
           waitlist.serviceName.toLowerCase().includes(query) ||
           waitlist.status.toLowerCase().includes(query) ||
@@ -69,9 +65,8 @@ const BusinessWaitlistList = () => {
         );
       }
 
-      // Keep existing range filtering logic
-      if (sanitizedParams.ranges) {
-        Object.entries(sanitizedParams.ranges).forEach(([field, range]) => {
+      if (searchParams.ranges) {
+        Object.entries(searchParams.ranges).forEach(([field, range]) => {
           if (range.min) {
             results = results.filter(waitlist => waitlist[field] >= Number(range.min));
           }
@@ -97,39 +92,17 @@ const BusinessWaitlistList = () => {
       const response = await axios.get(`${API_URL}/api/waitlists`, {
         params: { ownerId: userId },
       });
-      
-      // Merge new data with existing state
-      setWaitlists(prev => {
-        const newWaitlists = response.data.filter(
-          newItem => !prev.some(existingItem => existingItem.id === newItem.id)
-        );
-        return [...prev, ...newWaitlists];
-      });
-
-      setFilteredWaitlists(prev => {
-        const newWaitlists = response.data.filter(
-          newItem => !prev.some(existingItem => existingItem.id === newItem.id)
-        );
-        return [...prev, ...newWaitlists];
-      });
+      setWaitlists(response.data);
+      setFilteredWaitlists(response.data);
     } catch (error) {
       console.error('Error fetching waitlists:', error);
     }
   };
 
   useEffect(() => {
-    if (!userId) return;
-
-    // Initial fetch
-    fetchWaitlists();
-
-    // Set up polling every 2 seconds
-    const pollInterval = setInterval(() => {
+    if (userId) {
       fetchWaitlists();
-    }, 2000);
-
-    // Cleanup on component unmount
-    return () => clearInterval(pollInterval);
+    }
   }, [userId]);
 
   const fetchNotifications = async () => {
@@ -245,12 +218,10 @@ const BusinessWaitlistList = () => {
         waitTime: Number(formData.waitTime),
         maxCapacity: Number(formData.maxCapacity)
       });
-
-      const newWaitlist = response.data;
-      // Update both states with new waitlist at the beginning of the arrays
-      setWaitlists(prev => [newWaitlist, ...prev]);
-      setFilteredWaitlists(prev => [newWaitlist, ...prev]);
+      setWaitlists(prevWaitlists => [...prevWaitlists, response.data]);
+      setFilteredWaitlists(prevFiltered => [...prevFiltered, response.data]);
       setShowCreateModal(false);
+      fetchWaitlists();
     } catch (error) {
       console.error('Error creating waitlist:', error);
       setModalState({
