@@ -98,11 +98,20 @@ const BusinessWaitlistList = () => {
         params: { ownerId: userId },
       });
       
-      // Compare with current state to avoid unnecessary updates
-      if (JSON.stringify(response.data) !== JSON.stringify(waitlists)) {
-        setWaitlists(response.data);
-        setFilteredWaitlists(response.data);
-      }
+      // Merge new data with existing state
+      setWaitlists(prev => {
+        const newWaitlists = response.data.filter(
+          newItem => !prev.some(existingItem => existingItem.id === newItem.id)
+        );
+        return [...prev, ...newWaitlists];
+      });
+
+      setFilteredWaitlists(prev => {
+        const newWaitlists = response.data.filter(
+          newItem => !prev.some(existingItem => existingItem.id === newItem.id)
+        );
+        return [...prev, ...newWaitlists];
+      });
     } catch (error) {
       console.error('Error fetching waitlists:', error);
     }
@@ -237,14 +246,11 @@ const BusinessWaitlistList = () => {
         maxCapacity: Number(formData.maxCapacity)
       });
 
-      // Update both states immediately with the new waitlist
       const newWaitlist = response.data;
-      setWaitlists(prevWaitlists => [...prevWaitlists, newWaitlist]);
-      setFilteredWaitlists(prevFiltered => [...prevFiltered, newWaitlist]);
+      // Update both states with new waitlist at the beginning of the arrays
+      setWaitlists(prev => [newWaitlist, ...prev]);
+      setFilteredWaitlists(prev => [newWaitlist, ...prev]);
       setShowCreateModal(false);
-      
-      // Optional: Fetch fresh data from server
-      fetchWaitlists();
     } catch (error) {
       console.error('Error creating waitlist:', error);
       setModalState({
