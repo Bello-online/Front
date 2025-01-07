@@ -97,17 +97,30 @@ const BusinessWaitlistList = () => {
       const response = await axios.get(`${API_URL}/api/waitlists`, {
         params: { ownerId: userId },
       });
-      setWaitlists(response.data);
-      setFilteredWaitlists(response.data);
+      
+      // Compare with current state to avoid unnecessary updates
+      if (JSON.stringify(response.data) !== JSON.stringify(waitlists)) {
+        setWaitlists(response.data);
+        setFilteredWaitlists(response.data);
+      }
     } catch (error) {
       console.error('Error fetching waitlists:', error);
     }
   };
 
   useEffect(() => {
-    if (userId) {
+    if (!userId) return;
+
+    // Initial fetch
+    fetchWaitlists();
+
+    // Set up polling every 2 seconds
+    const pollInterval = setInterval(() => {
       fetchWaitlists();
-    }
+    }, 2000);
+
+    // Cleanup on component unmount
+    return () => clearInterval(pollInterval);
   }, [userId]);
 
   const fetchNotifications = async () => {
